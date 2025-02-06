@@ -34,22 +34,19 @@ const domains = [
     "users"
 ]
 
-addEventListener("fetch", event => {
-    event.respondWith(fetch(event.request))
-})
+export default {
+    async fetch(request) {
+        const url = new URL(request.url);
+        const path = url.pathname.split(/\//);
 
-// Export our request handler
-async function fetch(request) {
-    const url = new URL(request.url);
-    const path = url.pathname.split(/\//);
+        if (!path[1].trim()) return new Response(JSON.stringify({ message: "Missing ROBLOX subdomain." }), { status: 400 });
 
-    if (!path[1].trim()) return new Response(JSON.stringify({ message: "Missing ROBLOX subdomain." }), { status: 400 });
-
-    if (!domains.includes(path[1])) return new Response(JSON.stringify({ message: "Specified subdomain is not allowed." }), { status: 401 });
-    
-    return fetch(`https://${path[1]}.roblox.com/${path.slice(2).join("/")}${url.search}`, {
-        method: request.method,
-        headers: request.headers["content-type"] ? { "Content-Type": request.headers["content-type"] } : {},
-        body: request.body
-    });
+        if (!domains.includes(path[1])) return new Response(JSON.stringify({ message: "Specified subdomain is not allowed." }), { status: 401 });
+        
+        return fetch(`https://${path[1]}.roblox.com/${path.slice(2).join("/")}${url.search}`, {
+            method: request.method,
+            headers: request.headers["content-type"] ? { "Content-Type": request.headers["content-type"] } : {},
+            body: request.body
+        });
+    }
 }
